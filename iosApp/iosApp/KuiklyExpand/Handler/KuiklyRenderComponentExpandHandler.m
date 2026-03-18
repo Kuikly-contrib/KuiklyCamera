@@ -1,5 +1,7 @@
 #import "KuiklyRenderComponentExpandHandler.h"
 #import <SDWebImage/UIImageView+WebCache.h>
+#import "KRCameraView.h"
+#import "KRCameraModule.h"
 
 @implementation KuiklyRenderComponentExpandHandler
 

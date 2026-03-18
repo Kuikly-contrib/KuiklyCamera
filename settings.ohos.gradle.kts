@@ -28,4 +28,6 @@ rootProject.buildFileName = buildFileName
 
 include(":androidApp")
 include(":shared")
+include(":KuiklyCamera")
 project(":shared").buildFileName = buildFileName
+project(":KuiklyCamera").buildFileName = buildFileName

@@ -22,6 +22,8 @@ import com.kuikly.kuiklycamera.adapter.KRThreadAdapter
 import com.kuikly.kuiklycamera.adapter.KRUncaughtExceptionHandlerAdapter
 import com.kuikly.kuiklycamera.module.KRBridgeModule
 import com.kuikly.kuiklycamera.module.KRShareModule
+import com.tencent.kuiklybase.android.KRCameraView
+import com.tencent.kuiklybase.android.KRCameraModule
 import org.json.JSONObject
 
 class KuiklyRenderActivity : AppCompatActivity(), KuiklyRenderViewBaseDelegatorDelegate {
@@ -68,6 +70,15 @@ class KuiklyRenderActivity : AppCompatActivity(), KuiklyRenderViewBaseDelegatorD
         kuiklyRenderViewDelegator.onResume()
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        KRCameraModule.handlePermissionResult(requestCode, grantResults)
+    }
+
     override fun registerExternalModule(kuiklyRenderExport: IKuiklyRenderExport) {
         super.registerExternalModule(kuiklyRenderExport)
         with(kuiklyRenderExport) {
@@ -77,13 +88,18 @@ class KuiklyRenderActivity : AppCompatActivity(), KuiklyRenderViewBaseDelegatorD
             moduleExport(KRShareModule.MODULE_NAME) {
                 KRShareModule()
             }
+            moduleExport(KRCameraModule.MODULE_NAME) {
+                KRCameraModule()
+            }
         }
     }
 
     override fun registerExternalRenderView(kuiklyRenderExport: IKuiklyRenderExport) {
         super.registerExternalRenderView(kuiklyRenderExport)
         with(kuiklyRenderExport) {
-
+            renderViewExport(KRCameraView.VIEW_NAME, { context ->
+                KRCameraView(context)
+            })
         }
     }
 

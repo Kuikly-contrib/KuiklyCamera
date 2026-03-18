@@ -25,5 +25,7 @@ dependencyResolutionManagement {
 rootProject.name = "KuiklyCamera"
 include(":androidApp")
 include(":shared")
+include(":KuiklyCamera")
+include(":KuiklyCameraAndroid")
 include(":h5App")
 include(":miniApp")

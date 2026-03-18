@@ -12,5 +12,9 @@
       "name": "EntryAbility_label",
       "value": "kuiklydemo"
     }
+    ,{
+      "name": "camera_reason",
+      "value": "This app needs camera access for photo capture and preview"
+    }
   ]
 }

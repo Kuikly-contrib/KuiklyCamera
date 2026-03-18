@@ -12,5 +12,9 @@
       "name": "EntryAbility_label",
       "value": "kuiklydemo"
     }
+    ,{
+      "name": "camera_reason",
+      "value": "此应用需要使用相机来拍照和预览"
+    }
   ]
 }
