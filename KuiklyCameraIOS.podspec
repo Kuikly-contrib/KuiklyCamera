@@ -2,7 +2,7 @@ Pod::Spec.new do |spec|
   spec.name                     = 'KuiklyCameraIOS'
   spec.version                  = '1.0.0'
   spec.homepage                 = 'https://github.com/Kuikly-contrib/KuiklyCamera'
-  spec.source                   = { :git => 'https://github.com/Kuikly-contrib/KuiklyCamera.git', :tag => "#{spec.version}" }
+  spec.source                   = { :git => 'https://github.com/Kuikly-contrib/KuiklyCamera.git', :branch => 'main' }
   spec.authors                  = 'Kuikly Team'
   spec.license                  = { :type => 'MIT', :file => 'LICENSE' }
   spec.summary                  = 'KuiklyCamera iOS Native Module - Camera view and module implementation for Kuikly framework'
