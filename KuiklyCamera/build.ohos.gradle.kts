@@ -1,7 +1,18 @@
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
+    `maven-publish`
 }
+
+// 从 Gradle 参数读取发布配置
+val mavenVersion: String by project
+val groupId: String? by project
+val mavenRepoUrl: String? by project
+val mavenUsername: String? by project
+val mavenPassword: String? by project
+
+group = groupId ?: "com.tencent.kuiklybase"
+version = mavenVersion
 
 kotlin {
     androidTarget {
@@ -56,5 +67,17 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            url = uri(mavenRepoUrl ?: "https://mirrors.tencent.com/repository/maven/kuikly-open/")
+            credentials {
+                username = mavenUsername ?: ""
+                password = mavenPassword ?: ""
+            }
+        }
     }
 }
