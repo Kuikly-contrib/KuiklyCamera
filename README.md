@@ -2,22 +2,7 @@
 
 基于 [Kuikly](https://github.com/Tencent-TDS/KuiklyUI) 跨端框架的 **相机组件库**，采用 Kotlin Multiplatform (KMP) 架构，提供 Android、iOS、鸿蒙（HarmonyOS）三端统一的相机预览与拍照能力。
 
-
-
 ---
-
-## ✨ 特性
-
--  **相机预览** — 实时预览，支持自动启动
--  **拍照** — 支持自定义质量参数
--  **前后摄像头切换**
--  **闪光灯控制** — 关闭 / 开启 / 自动
--  **缩放控制** — 支持动态调节缩放倍数
--  **分辨率设置** — 高 / 中 / 低三档
--  **权限管理** — 请求与检查相机权限
--  **跨平台** — Android (CameraX) / iOS (AVFoundation) / 鸿蒙 (ArkTS Camera Kit) 原生实现
-
-
 ##  接入指引
 
 ### 第一步：添加 Maven 仓库
