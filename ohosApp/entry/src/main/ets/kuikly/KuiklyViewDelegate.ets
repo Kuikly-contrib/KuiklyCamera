@@ -4,10 +4,9 @@ import {
   KRRenderViewExportCreator
 } from '@kuikly-open/render';
 import { KRMyView } from './components/KRMyView';
-import { KRCameraView } from './components/KRCameraView';
+import { KRCameraView, KRCameraModule } from '@kuikly-open/camera';
 import { KRBridgeModule } from './modules/KRBridgeModule';
 import { KRMyModule } from './modules/KRMyModule';
-import { KRCameraModule } from './modules/KRCameraModule';
 
 export class KuiklyViewDelegate extends IKuiklyViewDelegate {
   getCustomRenderViewCreatorRegisterMap(): Map<string, KRRenderViewExportCreator> {

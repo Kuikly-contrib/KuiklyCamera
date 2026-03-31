@@ -5,20 +5,20 @@ plugins {
 }
 
 // 从 Gradle 参数读取发布配置
-val mavenVersion: String by project
+val mavenVersion: String? by project
 val groupId: String? by project
 val mavenRepoUrl: String? by project
 val mavenUsername: String? by project
 val mavenPassword: String? by project
 
 group = groupId ?: "com.tencent.kuiklybase"
-version = mavenVersion
+version = mavenVersion ?: "1.0.0"
 
 kotlin {
     androidTarget {
         compilations.all {
-            kotlinOptions {
-                jvmTarget = "1.8"
+            compilerOptions.configure {
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
             }
         }
         publishLibraryVariants("release")

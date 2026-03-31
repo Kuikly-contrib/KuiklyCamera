@@ -164,7 +164,7 @@ export class KRCameraView extends KuiklyRenderBaseView {
       const previewProfile = outputCapability.previewProfiles[0];
       this.previewOutput = this.cameraManager.createPreviewOutput(previewProfile, this.surfaceId);
 
-      // 创建拍照输出（使用 ImageReceiver 获取拍照数据）
+      // 创建拍照输出
       const photoProfile = outputCapability.photoProfiles[0];
       this.photoOutput = this.cameraManager.createPhotoOutput(photoProfile);
 

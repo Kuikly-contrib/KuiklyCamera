@@ -89,6 +89,8 @@ pod install
 
 #### 鸿蒙（HarmonyOS）
 
+**1. KMP 层依赖**
+
 在你的鸿蒙项目 KMP shared 模块的 `build.ohos.gradle.kts` 中，使用鸿蒙专用版本：
 
 ```kotlin
@@ -103,54 +105,23 @@ kotlin {
 }
 ```
 
-**鸿蒙原生实现**
+**2. 原生端依赖（ohpm）**
 
-鸿蒙端有独立的原生实现（基于 ArkTS Camera Kit），位于：
+在你的鸿蒙项目 `entry/oh-package.json5` 中添加：
 
-```
-ohosApp/entry/src/main/ets/kuikly/
-├── components/
-│   └── KRCameraView.ets       # 相机视图组件
-└── modules/
-    └── KRCameraModule.ets     # 相机模块
-```
-
-使用时需要将这些文件复制到你的鸿蒙项目对应位置，或者直接使用本仓库的 `ohosApp` 作为参考。
-
-> 注意：鸿蒙端使用 ArkTS 开发，文件格式为 `.ets`，不同于 Android/iOS 的 Kotlin/Objective-C。
-
-### 源码依赖方式（可选）
-
-如果不使用 Maven 远程依赖，也可以将源码模块直接引入项目：
-
-1. 将 `KuiklyCamera/`、`KuiklyCameraAndroid/`、`KuiklyCameraIOS/` 目录复制到项目中
-
-2. 在 `settings.gradle.kts` 中注册模块：
-
-```kotlin
-include(":KuiklyCamera")
-include(":KuiklyCameraAndroid")
-```
-
-3. 在 `buildSrc` 中配置版本号：
-
-```kotlin
-object Version {
-    private const val KUIKLY_VERSION = "2.7.0"
-    private const val KOTLIN_VERSION = "2.0.21"
-    fun getKuiklyVersion(): String = "$KUIKLY_VERSION-$KOTLIN_VERSION"
+```json5
+"dependencies": {
+  "@yuki8273/camera": "1.0.0"
 }
 ```
 
-4. 添加模块依赖：
+然后执行安装：
 
-```kotlin
-// shared 模块的 build.gradle.kts (commonMain)
-implementation(project(":KuiklyCamera"))
-
-// Android App 模块的 build.gradle.kts
-implementation(project(":KuiklyCameraAndroid"))
+```bash
+cd your-ohos-project
+ohpm install
 ```
+
 
 ---
 

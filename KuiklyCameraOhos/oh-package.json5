@@ -1,0 +1,21 @@
+{
+  "name": "@yuki8273/camera",
+  "version": "1.0.0",
+  "description": "KuiklyCamera HarmonyOS Native Module - Camera view and module implementation for Kuikly framework",
+  "main": "src/main/ets/Index.ets",
+  "author": "Kuikly Team",
+  "license": "MIT",
+  "repository": "https://github.com/Kuikly-contrib/KuiklyCamera",
+  "homepage": "https://github.com/Kuikly-contrib/KuiklyCamera",
+  "keywords": [
+    "kuikly",
+    "camera",
+    "harmonyos",
+    "arkts",
+    "camera-kit"
+  ],
+  "dependencies": {
+    "@kuikly-open/render": "2.7.0"
+  },
+  "modelVersion": "5.0.0"
+}
