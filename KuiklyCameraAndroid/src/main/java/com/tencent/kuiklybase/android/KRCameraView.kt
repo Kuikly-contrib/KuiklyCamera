@@ -2,6 +2,7 @@ package com.tencent.kuiklybase.android
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
@@ -15,8 +16,10 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.tencent.kuikly.core.render.android.css.ktx.setCommonProp
 import com.tencent.kuikly.core.render.android.export.IKuiklyRenderViewExport
 import com.tencent.kuikly.core.render.android.export.KuiklyRenderCallback
 import org.json.JSONObject
@@ -34,7 +37,15 @@ import java.util.concurrent.Executors
  */
 class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewExport {
 
-    private var previewView: PreviewView? = null
+    private val previewView: PreviewView = PreviewView(context).apply {
+        layoutParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.MATCH_PARENT
+        )
+        // 关键：使用 COMPATIBLE 模式（TextureView 实现）可避免在某些容器中黑屏
+        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+        scaleType = PreviewView.ScaleType.FILL_CENTER
+    }
     private var camera: Camera? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private var imageCapture: ImageCapture? = null
@@ -48,6 +59,9 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
     private var currentResolution = "medium"
     private var autoStart = true
     private var isCameraStarted = false
+    private var isCameraStarting = false
+    // 标记是否在 attach 时尺寸还没准备好，需在 onSizeChanged 中启动
+    private var pendingStart = false
 
     // 事件回调
     private var onCameraReadyCallback: KuiklyRenderCallback? = null
@@ -55,14 +69,17 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
     private var onPhotoCapturedCallback: KuiklyRenderCallback? = null
 
     init {
-        previewView = PreviewView(context).apply {
-            layoutParams = LayoutParams(
-                LayoutParams.MATCH_PARENT,
-                LayoutParams.MATCH_PARENT
-            )
-            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-        }
+        setBackgroundColor(android.graphics.Color.BLACK)
         addView(previewView)
+    }
+
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
+        // 当 Kuikly 框架第一次给 KRCameraView 设置尺寸后，再启动相机
+        if (pendingStart && w > 0 && h > 0) {
+            pendingStart = false
+            startCamera()
+        }
     }
 
     override fun setProp(propKey: String, propValue: Any): Boolean {
@@ -116,7 +133,12 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
                 onPhotoCapturedCallback = propValue as? KuiklyRenderCallback
                 true
             }
-            else -> false
+            else -> {
+                // 关键：未识别的属性必须交还给 Kuikly 框架处理通用 CSS 属性，
+                // 包括 frame（位置/尺寸）、backgroundColor、borderRadius、opacity 等。
+                // 否则 View 不会被 layout，导致 width/height 始终为 0，相机预览黑屏。
+                this.setCommonProp(propKey, propValue)
+            }
         }
     }
 
@@ -163,8 +185,13 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        if (autoStart && hasCameraPermission()) {
-            startCamera()
+        if (autoStart) {
+            if (hasCameraPermission()) {
+                startCamera()
+            } else {
+                // 主动申请相机权限，授权成功后自动启动相机
+                requestCameraPermissionAndStart()
+            }
         }
     }
 
@@ -185,7 +212,19 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
     // ---- 内部实现 ----
 
     private fun startCamera() {
+        // 防止重入：getInstance 异步回调可能被多次触发，导致重复绑定造成黑屏
+        if (isCameraStarting) {
+            Log.d(TAG, "startCamera ignored: already starting")
+            return
+        }
+        // 必须等待 View 真正有尺寸，否则 Preview 用例无法获取到 Surface 大小
+        if (width == 0 || height == 0) {
+            Log.d(TAG, "startCamera deferred: view size is 0, wait for onSizeChanged")
+            pendingStart = true
+            return
+        }
         val ctx = context ?: return
+        isCameraStarting = true
         val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
         cameraProviderFuture.addListener({
             try {
@@ -194,7 +233,7 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
 
                 // 预览
                 preview = Preview.Builder().build().also {
-                    it.setSurfaceProvider(previewView?.surfaceProvider)
+                    it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
                 // 拍照
@@ -222,9 +261,16 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
                     // 设置缩放
                     camera?.cameraControl?.setZoomRatio(currentZoom)
                     isCameraStarted = true
+                    Log.i(TAG, "Camera started: facing=$currentFacing, size=${width}x${height}")
 
                     // 触发 onCameraReady 事件
                     onCameraReadyCallback?.invoke(mapOf<String, Any>())
+                } else {
+                    Log.e(TAG, "LifecycleOwner not found, camera not bound")
+                    onErrorCallback?.invoke(mapOf(
+                        "errorCode" to -4,
+                        "description" to "LifecycleOwner not found"
+                    ))
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Camera start failed: ${e.message}", e)
@@ -232,6 +278,8 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
                     "errorCode" to -1,
                     "description" to (e.message ?: "Camera start failed")
                 ))
+            } finally {
+                isCameraStarting = false
             }
         }, ContextCompat.getMainExecutor(ctx))
     }
@@ -328,6 +376,52 @@ class KRCameraView(context: Context) : FrameLayout(context), IKuiklyRenderViewEx
         return ContextCompat.checkSelfPermission(
             context, Manifest.permission.CAMERA
         ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    /**
+     * 主动申请相机权限。如果当前已有 pending callback，则同步当前 callback；
+     * 授权结果通过 KRCameraModule.handlePermissionResult 路由回来后，
+     * 我们再启动相机预览。
+     */
+    private fun requestCameraPermissionAndStart() {
+        val act = findActivity() ?: run {
+            onErrorCallback?.invoke(
+                mapOf(
+                    "errorCode" to -3,
+                    "description" to "Camera permission denied (no activity)"
+                )
+            )
+            return
+        }
+        // 注册一个 callback：授权成功后启动预览
+        KRCameraModule.pendingPermissionCallback = { result ->
+            val granted = (result as? Map<*, *>)?.get("granted") == true
+            if (granted) {
+                // 必须在主线程启动
+                post { startCamera() }
+            } else {
+                onErrorCallback?.invoke(
+                    mapOf(
+                        "errorCode" to -3,
+                        "description" to "Camera permission denied"
+                    )
+                )
+            }
+        }
+        ActivityCompat.requestPermissions(
+            act,
+            arrayOf(Manifest.permission.CAMERA),
+            KRCameraModule.PERMISSION_REQUEST_CODE
+        )
+    }
+
+    private fun findActivity(): Activity? {
+        var ctx: Context? = context
+        while (ctx != null) {
+            if (ctx is Activity) return ctx
+            ctx = if (ctx is android.content.ContextWrapper) ctx.baseContext else null
+        }
+        return null
     }
 
     private fun getLifecycleOwner(): LifecycleOwner? {

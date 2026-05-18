@@ -50,6 +50,17 @@ internal class CameraPage : BasePager() {
         return modules
     }
 
+    override fun created() {
+        super.created()
+        // 进入页面主动申请相机权限，避免 Android 端因无运行时权限导致黑屏
+        cameraModule.requestPermission { result ->
+            val granted = result.toString().contains("true")
+            if (!granted) {
+                statusText = "相机权限未授权，请在设置中开启"
+            }
+        }
+    }
+
     override fun body(): ViewBuilder {
         val ctx = this
         return {
