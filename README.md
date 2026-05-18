@@ -28,7 +28,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.tencent.kuiklybase:KuiklyCamera:1.0.0-2.0.21")
+                implementation("com.tencent.kuiklybase:KuiklyCamera:1.0.3-2.0.21")
             }
         }
     }
@@ -48,7 +48,7 @@ kotlin {
 ```kotlin
 dependencies {
     // KuiklyCamera Android 原生实现（基于 CameraX）
-    implementation("com.tencent.kuiklybase:KuiklyCameraAndroid:1.0.0-2.0.21")
+    implementation("com.tencent.kuiklybase:KuiklyCameraAndroid:1.0.3-2.0.21")
 }
 ```
 
@@ -98,7 +98,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.tencent.kuiklybase:KuiklyCamera:1.0.0-2.0.21-KBA-010")
+                implementation("com.tencent.kuiklybase:KuiklyCamera:1.0.3-2.0.21-KBA-010")
             }
         }
     }

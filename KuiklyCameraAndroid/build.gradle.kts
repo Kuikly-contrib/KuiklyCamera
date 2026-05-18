@@ -4,14 +4,21 @@ plugins {
     `maven-publish`
 }
 
-// 从 Gradle 参数读取发布配置
-val mavenVersion: String by project
-val groupId: String? by project
-val mavenRepoUrl: String? by project
-val mavenUsername: String? by project
-val mavenPassword: String? by project
+// 从 Gradle 参数读取发布配置（均为可选，未传时使用默认值，保证 IDE Sync / 普通 build 不报错）
+val mavenVersion: String = (project.findProperty("mavenVersion") as String?)
+    ?: (project.findProperty("MAVEN_VERSION") as String?)
+    ?: "1.0.0"
+val groupId: String = (project.findProperty("groupId") as String?)
+    ?: (project.findProperty("GROUP_ID") as String?)
+    ?: "com.tencent.kuiklybase"
+val mavenRepoUrl: String? = (project.findProperty("mavenRepoUrl") as String?)
+    ?: (project.findProperty("MAVEN_REPO_URL") as String?)
+val mavenUsername: String? = (project.findProperty("mavenUsername") as String?)
+    ?: (project.findProperty("MAVEN_USERNAME") as String?)
+val mavenPassword: String? = (project.findProperty("mavenPassword") as String?)
+    ?: (project.findProperty("MAVEN_PASSWORD") as String?)
 
-group = groupId ?: "com.tencent.kuiklybase"
+group = groupId
 version = mavenVersion
 
 android {
